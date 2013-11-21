@@ -4,14 +4,14 @@ set -o nounset
 set -o errexit
 
 dbname='tester'
+tmploc='/tmp/sqlevolve.sql'
 
 db () {
-  local cmd="$1"
-  psql -t -c "$cmd" $dbname
+  psql "$dbname" < "$1"
 }
 
 dbScalar () {
-  local res=$(db "$1")
+  local res=$(psql -t -c "$1" $dbname)
   echo ${res//[:space:]/}
 }
 
@@ -19,14 +19,17 @@ evolve () {
   local file="$1"
   local direction="$2"
   local isReadingUp=true
+  echo "$1..."
+  echo "" > "$tmploc"
   while read line; do
     [[ "$line" = '-- DOWN' ]] && isReadingUp=false
     # If we're going up, don't read the down
-    [[ "$direction" = 'up' ]]  && ! $isReadingUp && return 0
+    [[ "$direction" = 'up' ]]  && ! $isReadingUp && break
     # If we're going down, don't read the up
     [[ "$direction" = 'down' ]] && $isReadingUp && continue
-    db "$line"
+    echo "$line" >> "$tmploc"
   done < "$file"
+  db "$tmploc"
 }
 
 max () {
@@ -38,7 +41,7 @@ max () {
 }
 
 quit () {
-  echo "INFO: Evolution complete. Exiting..."
+  echo "INFO: Evolution complete!"
   exit 0
 }
 
@@ -80,5 +83,6 @@ else
   done
 fi
 
-db "update version set version=$target where version=$current;"
+dbScalar "update version set version=$target where version=$current;"
+quit
 
