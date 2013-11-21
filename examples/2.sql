@@ -1,4 +1,5 @@
 
+-- whitespace and comments are ignored (except for UP and DOWN)
 
 
 -- UP
