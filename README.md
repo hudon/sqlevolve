@@ -1,7 +1,7 @@
 sqlevolve
 =========
 
-sql evolution (migration) scripter
+minimal sql change scripter in bash.
 
 This tool helps you write database change scripts (aka "sql evolutions" or "db
 migrations"). It works with postgresql but can be easily adapted.
@@ -15,7 +15,7 @@ Usage:
 2. write your sql evolutions in named files `<version>.sql` starting from version `1`.
 3. format of the sql scripts: An `-- UP` line followed by the sql statements,
    then a `-- DOWN` line followed by the "undo" sql statements.
-4. run sqlevolve:
+4. run sqlevolve where your scripts are:
 
 ```
 sqlevolve [version]
