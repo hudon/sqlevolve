@@ -3,7 +3,7 @@
 set -o nounset
 set -o errexit
 
-dbname='tester'
+. sqlevolveconf
 tmploc='/tmp/sqlevolve.sql'
 
 db () {
@@ -47,9 +47,11 @@ quit () {
 
 echo "INFO: sqlevolve is running on database \"$dbname\" in dir \"$(pwd)\""
 
+sqls=$(ls | grep 'sql$')
+
 # Get target version
 if [[ $# = 0 ]] ; then
-  target=$(max $(ls | sed 's/.sql//'))
+  target=$(max $(echo "$sqls" | sed 's/.sql//'))
   echo "INFO: No target given, will use the highest evolution found."
 else
   target="$1"
@@ -72,12 +74,12 @@ echo "INFO: Evolving $direction"
 
 # Get relevant scripts and run them
 if [[ $direction = 'up' ]] ; then
-  for file in $(ls | sort -n) ; do
+  for file in $(echo "$sqls" | sort -n) ; do
     i="${file%.sql}"
     [[ "$i" -gt $current && "$i" -le $target ]] && evolve "$file" "$direction"
   done
 else
-  for file in $(ls | sort -nr) ; do
+  for file in $(echo "$sqls" | sort -nr) ; do
     i="${file%.sql}"
     [[ "$i" -le $current && "$i" -gt $target ]] && evolve "$file" "$direction"
   done
