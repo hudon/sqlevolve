@@ -7,7 +7,7 @@ set -o errexit
 tmploc='/tmp/sqlevolve.sql'
 
 db () {
-  psql "$dbname" < "$1"
+  psql "$dbname" --single-transaction -f "$1"
 }
 
 dbScalar () {
