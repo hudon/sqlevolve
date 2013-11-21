@@ -1,0 +1,84 @@
+#!/bin/bash
+
+set -o nounset
+set -o errexit
+
+dbname='tester'
+
+db () {
+  local cmd="$1"
+  psql -t -c "$cmd" $dbname
+}
+
+dbScalar () {
+  local res=$(db "$1")
+  echo ${res//[:space:]/}
+}
+
+evolve () {
+  local file="$1"
+  local direction="$2"
+  local isReadingUp=true
+  while read line; do
+    [[ "$line" = '-- DOWN' ]] && isReadingUp=false
+    # If we're going up, don't read the down
+    [[ "$direction" = 'up' ]]  && ! $isReadingUp && return 0
+    # If we're going down, don't read the up
+    [[ "$direction" = 'down' ]] && $isReadingUp && continue
+    db "$line"
+  done < "$file"
+}
+
+max () {
+  local max="$1"
+  for v in "$@" ; do
+    [[ "$v" -gt "$max" ]] && max="$v"
+  done
+  echo "$max"
+}
+
+quit () {
+  echo "INFO: Evolution complete. Exiting..."
+  exit 0
+}
+
+echo "INFO: sqlevolve is running on database \"$dbname\" in dir \"$(pwd)\""
+
+# Get target version
+if [[ $# = 0 ]] ; then
+  target=$(max $(ls | sed 's/.sql//'))
+  echo "INFO: No target given, will use the highest evolution found."
+else
+  target="$1"
+fi
+echo "INFO: Targeting: ${target}.sql"
+
+# Get current version
+current=$(dbScalar 'select * from version;')
+echo "INFO: Current version: $current"
+
+# Get direction
+if [[ $current = $target ]] ; then
+  quit
+elif [[ $current -lt $target ]] ; then
+  direction="up"
+else
+  direction="down"
+fi
+echo "INFO: Evolving $direction"
+
+# Get relevant scripts and run them
+if [[ $direction = 'up' ]] ; then
+  for file in $(ls | sort -n) ; do
+    i="${file%.sql}"
+    [[ "$i" -gt $current && "$i" -le $target ]] && evolve "$file" "$direction"
+  done
+else
+  for file in $(ls | sort -nr) ; do
+    i="${file%.sql}"
+    [[ "$i" -le $current && "$i" -gt $target ]] && evolve "$file" "$direction"
+  done
+fi
+
+db "update version set version=$target where version=$current;"
+
