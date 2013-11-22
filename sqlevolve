@@ -7,11 +7,11 @@ set -o errexit
 tmploc='/tmp/sqlevolve.sql'
 
 db () {
-  psql "$dbname" --single-transaction -f "$1"
+  psql --set ON_ERROR_STOP= --single-transaction -f "$1" "$dbname"
 }
 
 dbScalar () {
-  local res=$(psql -t -c "$1" $dbname)
+  local res=$(psql --set ON_ERROR_STOP= -t -c "$1" $dbname)
   echo ${res//[:space:]/}
 }
 
@@ -19,7 +19,10 @@ evolve () {
   local file="$1"
   local direction="$2"
   local isReadingUp=true
+  echo ''
   echo "$1..."
+
+  # transfer the right section to the tmp file
   echo "" > "$tmploc"
   while read line; do
     [[ "$line" = '-- DOWN' ]] && isReadingUp=false
@@ -29,7 +32,18 @@ evolve () {
     [[ "$direction" = 'down' ]] && $isReadingUp && continue
     echo "$line" >> "$tmploc"
   done < "$file"
+
+  # execute the tmp file
   db "$tmploc"
+
+  # update the version. A correction must be made to the target if we're
+  # moving down because the resulting version of a "down" is 1 less than the
+  # script we are running
+  local current="$(dbScalar 'select * from version;')"
+  local target="${file%.sql}"
+  [[ "$direction" = 'down' ]] && target=$(( target - 1 ))
+  dbScalar "update version set version=$target where version=$current;"
+  echo "...done!"
 }
 
 max () {
@@ -85,6 +99,5 @@ else
   done
 fi
 
-dbScalar "update version set version=$target where version=$current;"
 quit
 
