@@ -100,5 +100,6 @@ else
   done
 fi
 
+rm "$tmploc"
 quit
 
