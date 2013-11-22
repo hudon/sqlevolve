@@ -3,15 +3,16 @@
 set -o nounset
 set -o errexit
 
-. sqlevolveconf
 tmploc='/tmp/sqlevolve.sql'
+psqlargs=''
+. sqlevolveconf
 
 db () {
-  psql --set ON_ERROR_STOP= --single-transaction -f "$1" "$dbname"
+  psql $psqlargs --set ON_ERROR_STOP= --single-transaction -f "$1" "$dbname"
 }
 
 dbScalar () {
-  local res=$(psql --set ON_ERROR_STOP= -t -c "$1" $dbname)
+  local res=$(psql $psqlargs --set ON_ERROR_STOP= -t -c "$1" $dbname)
   echo ${res//[:space:]/}
 }
 
