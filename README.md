@@ -14,8 +14,8 @@ All you need is a `version` table with a `version` field and then your sql scrip
 `create table version (version integer primary key);insert into version values (0);`
 2. write your sql evolutions in named files `<version>.sql` starting from version `1`.
 3. format of the sql scripts: An `-- UP` line followed by the sql statements,
-   then a `-- DOWN` line followed by the "undo" sql statements.
-4. run sqlevolve where your scripts are:
+   then a `-- DOWN` line followed by the "opposite" sql statements.
+4. run sqlevolve where your scripts are; it assumes the `<version>.sql` files are in your cwd:
 
 ```
 sqlevolve [version]
