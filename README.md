@@ -10,7 +10,7 @@ All you need is a `version` table with a `version` field and then your sql scrip
 
 Usage:
 
-1. have a `version` table with a `version` integer colunm (will be a scalar)
+1. have a `version` table with a `version` integer column (will be a scalar)
 `create table version (version integer primary key);insert into version values (0);`
 2. write your sql evolutions in named files `<version>.sql` starting from version `1`.
 3. format of the sql scripts: An `-- UP` line followed by the sql statements,
