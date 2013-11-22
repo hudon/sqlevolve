@@ -38,7 +38,7 @@ If you want to configure the arguments read by `psql`, drop a `sqlevolveconf` fi
 It supports two variables, `dbname` and `psqlargs`.
 
 ```
-# sqlconf
+# sqlevolveconf
 dbname='mydb'
 psqlargs='-U my-favourite-user -h 127.0.0.1'
 ```
