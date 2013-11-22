@@ -25,20 +25,17 @@ sqlevolve [version]
 
 ```
 -- 34.sql
-
 -- UP
-
 create table foo ( name varchar(32) primary key );
 create table bar ( id serial primary key );
 
 -- DOWN
-
 drop table foo;
 drop table bar;
 ```
 
-5. If you want to configure the arguments read by `psql`, drop a `sqlevolveconf` file along with your migrations.
-   It supports two variables, `dbname` and `psqlargs`.
+If you want to configure the arguments read by `psql`, drop a `sqlevolveconf` file along with your migrations.
+It supports two variables, `dbname` and `psqlargs`.
 
 ```
 # sqlconf
@@ -48,13 +45,11 @@ psqlargs='-U my-favourite-user -h 127.0.0.1'
 
 ### Examples
 
-Using `psqlargs` can allow you to connect using tcp as shown above. Example usage:
-
 ```
-# using psqlargs to specify the user and passing the passwd in a variabl
-cd my-proj/migrations && PGPASSWORD='my-favourite-password' ../sqlevolve
-# or using PEER auth
-sudo -u username ./sqlevolve
+cd my-proj/migrations
+# use psqlargs to specify the user and pass the password in a variable
+PGPASSWORD='my-favourite-password' ../sqlevolve
+# or use PEER authentication
+sudo -u username ../sqlevolve
 ```
 
-psql
